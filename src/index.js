@@ -17,7 +17,6 @@ const Note = L.Note = L.FeatureGroup.extend({
     markerClass:    L.CircleMarker,
     overlayClass:   Content,
     offset:         [20, 20],
-    size:           [100, 100],
     overlayOptions: {},
     lineOptions:    {},
     anchorOptions:  {}
@@ -74,6 +73,16 @@ const Note = L.Note = L.FeatureGroup.extend({
   },
 
 
+  setSize(size) {
+    if (size) {
+      size = L.point(size);
+      this._overlay.options.maxWidth = size.x;
+      this._overlay.options.maxHeight = size.y;
+      this._overlay.update();
+    }
+  },
+
+
   setOffset(offset) {
     this.options.offset = offset;
     return this.update();
@@ -120,6 +129,7 @@ const Note = L.Note = L.FeatureGroup.extend({
     this._overlay = new OverlayClass(this.options.overlayOptions, this)
       .setLatLng(latlng)
       .setContent(options.content);
+    this.setSize(this.options.size);
   },
 
 
