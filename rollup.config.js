@@ -12,7 +12,7 @@ const leafletModuleName = 'L.Note';
 const plugins = (minify) => {
   const list = [
     commonjs({
-      sourceMap: false,
+      sourceMap: true,
       include: 'node_modules/**',
     }),
       // Allow node_modules resolution, so you can use 'external' to control
@@ -42,17 +42,29 @@ const plugins = (minify) => {
   return list;
 }
 
+
+const banner = `
+/**
+ * ${pkg.description}
+ * @license ${pkg.license}
+ * @copyright ${pkg.author} ${new Date().getFullYear()}
+ */
+`;
+
 export default [{
   entry: 'src/index.js',
-  dest: pkg.browser,
+  dest: pkg.main,
+  banner: banner,
   format: 'umd',
   moduleName: pkg.name,
   external: ['leaflet'],
   globals: {
     'leaflet': 'L'
   },
+  sourceMap: true,
   plugins: plugins(false),
 }, {
+  banner: banner,
   entry: 'src/index.js',
   dest: pkg.minified,
   format: 'umd',

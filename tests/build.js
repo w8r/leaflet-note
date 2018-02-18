@@ -13941,7 +13941,190 @@ exports.Map = Map;
 exports.map = createMap;
 
 })));
-//# sourceMappingURL=leaflet-src.js.map
+
+});
+
+var DRAGGABLE_CLASS = 'leaflet-marker-draggable';
+
+var Drag = leafletSrc.Handler.extend({
+
+  initialize: function (overlay) {
+    this._overlay = overlay;
+  },
+
+  addHooks: function () {
+    var handle = this._overlay._container;
+
+    if (!this._draggable) {
+      this._draggable = new leafletSrc.Draggable(handle, handle, true);
+    }
+
+    this._draggable.on({
+      dragstart: this._onDragStart,
+      predrag:   this._onPreDrag,
+      drag:      this._onDrag,
+      dragend:   this._onDragEnd
+    }, this).enable();
+
+    leafletSrc.DomUtil.addClass(handle, DRAGGABLE_CLASS);
+  },
+
+  removeHooks: function () {
+    this._draggable.off({
+      dragstart: this._onDragStart,
+      predrag:   this._onPreDrag,
+      drag:      this._onDrag,
+      dragend:   this._onDragEnd
+    }, this).disable();
+
+    if (this._overlay._container) {
+      leafletSrc.DomUtil.removeClass(this._overlay._container, DRAGGABLE_CLASS);
+    }
+  },
+
+  moved: function () {
+    return this._draggable && this._draggable._moved;
+  },
+
+  _adjustPan: function (e) {
+    var overlay = this._overlay,
+        map = overlay._map,
+        speed = this._overlay.options.autoPanSpeed,
+        padding = this._overlay.options.autoPanPadding,
+        handlePos = leafletSrc.DomUtil.getPosition(overlay._container).add(overlay._getAnchor()),
+        bounds = map.getPixelBounds(),
+        origin = map.getPixelOrigin();
+
+    var panBounds = leafletSrc.bounds(
+      bounds.min._subtract(origin).add(padding),
+      bounds.max._subtract(origin).subtract(padding)
+    );
+
+    if (!panBounds.contains(handlePos)) {
+      // Compute incremental movement
+      var movement = leafletSrc.point(
+        (Math.max(panBounds.max.x, handlePos.x) - panBounds.max.x) / (bounds.max.x - panBounds.max.x) -
+        (Math.min(panBounds.min.x, handlePos.x) - panBounds.min.x) / (bounds.min.x - panBounds.min.x),
+
+        (Math.max(panBounds.max.y, handlePos.y) - panBounds.max.y) / (bounds.max.y - panBounds.max.y) -
+        (Math.min(panBounds.min.y, handlePos.y) - panBounds.min.y) / (bounds.min.y - panBounds.min.y)
+      ).multiplyBy(speed);
+
+      map.panBy(movement, {animate: false});
+
+      this._draggable._newPos._add(movement);
+      this._draggable._startPos._add(movement);
+
+      leafletSrc.DomUtil.setPosition(overlay._container, this._draggable._newPos);
+      this._onDrag(e);
+
+      this._panRequest = leafletSrc.Util.requestAnimFrame(this._adjustPan.bind(this, e));
+    }
+  },
+
+  _onDragStart: function () {
+    // @section Dragging events
+    // @event dragstart: Event
+    // Fired when the user starts dragging the marker.
+
+    // @event movestart: Event
+    // Fired when the marker starts moving (because of dragging).
+
+    this._oldLatLng = this._overlay.getLatLng();
+    this._overlay
+        .closePopup()
+        .fire('movestart')
+        .fire('dragstart');
+  },
+
+  _onPreDrag: function (e) {
+    if (this._overlay.options.autoPan) {
+      leafletSrc.Util.cancelAnimFrame(this._panRequest);
+      this._panRequest = leafletSrc.Util.requestAnimFrame(this._adjustPan.bind(this, e));
+    }
+  },
+
+  _onDrag: function (e) {
+    var overlay = this._overlay,
+    handlePos = leafletSrc.DomUtil.getPosition(overlay._container).subtract(overlay._getAnchor()),
+        latlng = overlay._map.layerPointToLatLng(handlePos);
+
+    overlay._latlng = latlng;
+    e.latlng = latlng;
+    e.oldLatLng = this._oldLatLng;
+
+    // @event drag: Event
+    // Fired repeatedly while the user drags the marker.
+    overlay
+        .fire('move', e)
+        .fire('drag', e);
+  },
+
+  _onDragEnd: function (e) {
+    // @event dragend: DragEndEvent
+    // Fired when the user stops dragging the marker.
+
+     leafletSrc.Util.cancelAnimFrame(this._panRequest);
+
+    // @event moveend: Event
+    // Fired when the marker stops moving (because of dragging).
+    delete this._oldLatLng;
+    this._overlay
+        .fire('moveend')
+        .fire('dragend', e);
+  }
+});
+
+var Content = leafletSrc.DivOverlay.extend({
+
+
+  options: {
+    containerClass: 'leaflet-note-container',
+    contentClass:   'leaflet-note-content',
+    pane:           'popupPane',
+
+    maxWidth:       500,
+    minWidth:       50,
+    maxHeight:      null,
+    draggable:      true
+  },
+
+
+  _initLayout: function _initLayout() {
+    var options = this.options;
+    this._container   = leafletSrc.DomUtil.create('div', options.containerClass);
+    this._contentNode = leafletSrc.DomUtil.create('div', options.contentClass);
+    this._container.appendChild(this._contentNode);
+
+    this.dragging = new Drag(this);
+    if (options.draggable) {
+      this.dragging.enable();
+    }
+  },
+
+
+  _updateLayout: function _updateLayout() {
+    var ref = this._getSize();
+    var x = ref.x;
+    var y = ref.y;
+    leafletSrc.Popup.prototype._updateLayout.call(this);
+  },
+
+
+  _getSize: function _getSize() {
+    var content = this._contentNode;
+    return this.options.size ?
+      leafletSrc.point(this.options.size) :
+      leafletSrc.point(content.offsetWidth, content.offsetHeight);
+  },
+
+
+  _getAnchor: function _getAnchor() {
+    var size = this._getSize();
+    return [-size.x / 2, -size.y / 2];
+  },
+
+  _adjustPan: function _adjustPan() {}
 });
 
 /**
@@ -13953,25 +14136,17 @@ exports.map = createMap;
  */
 
 
-var Content = leafletSrc.DivOverlay.extend({
-  _initLayout: function _initLayout() {
-    this._container = leafletSrc.DomUtil.create('div', this.options.contentClass);
-  },
-  _updateLayout: function _updateLayout() {
-    console.log(arguments);
-  },
-  _adjustPan: function _adjustPan() {}
-});
-
-leafletSrc.Note = leafletSrc.FeatureGroup.extend({
+var Note = leafletSrc.Note = leafletSrc.FeatureGroup.extend({
 
   options: {
-    lineClass:     leafletSrc.Polyline,
-    markerClass:   leafletSrc.CircleMarker,
-    overlayClass:  Content,
-    offset:        [20,20],
-    lineOptions:   {},
-    anchorOptions: {}
+    lineClass:      leafletSrc.Polyline,
+    markerClass:    leafletSrc.CircleMarker,
+    overlayClass:   Content,
+    offset:         [20, 20],
+    size:           [100, 100],
+    overlayOptions: {},
+    lineOptions:    {},
+    anchorOptions:  {}
   },
 
 
@@ -14005,9 +14180,51 @@ leafletSrc.Note = leafletSrc.FeatureGroup.extend({
      */
     this._initialDistance = null;
 
+    leafletSrc.Util.setOptions(this, options);
     this._createLayers();
+
+    this._overlay
+      .on('dragstart', this._onOverlayDragStart, this)
+      .on('drag',      this._onOverlayDrag,      this)
+      .on('dragend',   this._onOverlayDragStart, this)
+      .on('move',      this._onOverlayMove,      this);
     leafletSrc.LayerGroup.prototype.initialize.call(this,
       [this._anchor, this._line, this._overlay]);
+  },
+
+
+  setContent: function setContent(content) {
+    this._overlay.setContent(content);
+    this._updateLatLngs();
+    return this;
+  },
+
+
+  setOffset: function setOffset(offset) {
+    this.options.offset = offset;
+    return this.update();
+  },
+
+
+  update: function update() {
+    this._overlay.setLatLng(this._getOverlayLatLng()).update();
+    this._updateLatLngs();
+    return this;
+  },
+
+
+  _updateLatLngs: function _updateLatLngs() {
+    this._line.setLatLngs([this._anchor.getLatLng(), this._overlay.getLatLng()]);
+  },
+
+  _onOverlayMove: function _onOverlayMove() {
+    var newLatLng = this._overlay.getLatLng();
+    if (this._map) {
+      var anchorPos = this._map.latLngToContainerPoint(this._latlng);
+      var newPos = this._map.latLngToContainerPoint(newLatLng);
+      this.options.offset = newPos.subtract(anchorPos);
+      this._line.setLatLngs([this._latlng, newLatLng]);
+    }
   },
 
 
@@ -14021,12 +14238,13 @@ leafletSrc.Note = leafletSrc.FeatureGroup.extend({
       leafletSrc.Util.extend({}, leafletSrc.Note.prototype.options.anchorOptions,
         options.anchorOptions));
 
-    this._line = new LineClass([this._latlng, this._getOverlayLatLng()],
+    var latlng = this._getOverlayLatLng();
+    this._line = new LineClass([this._latlng, latlng],
       leafletSrc.Util.extend({}, leafletSrc.Note.prototype.options.lineOptions,
         options.lineOptions));
 
-    this._overlay = new OverlayClass(options, this)
-      .setLatLng(this._latlng)
+    this._overlay = new OverlayClass(this.options.overlayOptions, this)
+      .setLatLng(latlng)
       .setContent(options.content);
   },
 
@@ -14043,13 +14261,13 @@ leafletSrc.Note = leafletSrc.FeatureGroup.extend({
   setLatLng: function setLatLng(latlng) {
     this._latlng = latlng;
     this._anchor.setLatLng(latlng);
-    this._overlay.setLatLng(latlng);
-
+    this._overlay.setLatLng(this._getOverlayLatLng());
   },
 
   onAdd: function onAdd(map) {
     leafletSrc.FeatureGroup.prototype.onAdd.call(this, map);
     this._line.setLatLngs([this._latlng, this._getOverlayLatLng()]);
+    this._overlay.setLatLng(this._getOverlayLatLng());
     return this;
   },
 
@@ -14059,8 +14277,6 @@ leafletSrc.Note = leafletSrc.FeatureGroup.extend({
    * @param  {Event} evt
    */
   _onOverlayDragStart: function(evt) {
-    this._initialDistance = leafletSrc.DomEvent.getMousePosition(evt)
-      .subtract(this._map.latLngToContainerPoint(this._marker.getLatLng()));
     this.fire('label:' + evt.type, evt);
   },
 
@@ -14070,9 +14286,6 @@ leafletSrc.Note = leafletSrc.FeatureGroup.extend({
    * @param  {DragEvent} evt
    */
   _onOverlayDrag: function(evt) {
-    var latlng = this._map.containerPointToLatLng(
-      leafletSrc.DomEvent.getMousePosition(evt)._subtract(this._initialDistance));
-    this._line.setLatLngs([latlng, this._latlng]);
     this.fire('label:' + evt.type, evt);
   },
 
@@ -14081,6 +14294,8 @@ leafletSrc.Note = leafletSrc.FeatureGroup.extend({
     this.fire('label:' + evt.type, evt);
   }
 });
+
+Note.Content = Content;
 
 function note(latlng, options) {
   return new leafletSrc.Note(latlng, options);

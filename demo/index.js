@@ -11,7 +11,11 @@ const layer = L.tileLayer(
 
 const note = L.note([48.8535912,2.340996], {
   size: [200, 100],
-  offset: [100, 50],
-  content: `<img src="https://media.giphy.com/media/lH0nrd3yKW1sA/giphy.gif" />`
+  offset: [200, -200],
+  content: `<img src="https://media.giphy.com/media/lH0nrd3yKW1sA/giphy.gif">`
 }).addTo(map);
+
+setTimeout(() => note.update(), 500);
+
+window.note = note;
 

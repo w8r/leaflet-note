@@ -8,27 +8,19 @@
 
 
 import L from 'leaflet';
+import Content from './content';
 
-
-const Content = L.DivOverlay.extend({
-  _initLayout() {
-    this._container = L.DomUtil.create('div', this.options.contentClass);
-  },
-  _updateLayout() {
-    console.log(arguments);
-  },
-  _adjustPan() {}
-});
-
-L.Note = L.FeatureGroup.extend({
+const Note = L.Note = L.FeatureGroup.extend({
 
   options: {
-    lineClass:     L.Polyline,
-    markerClass:   L.CircleMarker,
-    overlayClass:  Content,
-    offset:        [20,20],
-    lineOptions:   {},
-    anchorOptions: {}
+    lineClass:      L.Polyline,
+    markerClass:    L.CircleMarker,
+    overlayClass:   Content,
+    offset:         [20, 20],
+    size:           [100, 100],
+    overlayOptions: {},
+    lineOptions:    {},
+    anchorOptions:  {}
   },
 
 
@@ -62,9 +54,51 @@ L.Note = L.FeatureGroup.extend({
      */
     this._initialDistance = null;
 
+    L.Util.setOptions(this, options);
     this._createLayers();
+
+    this._overlay
+      .on('dragstart', this._onOverlayDragStart, this)
+      .on('drag',      this._onOverlayDrag,      this)
+      .on('dragend',   this._onOverlayDragStart, this)
+      .on('move',      this._onOverlayMove,      this);
     L.LayerGroup.prototype.initialize.call(this,
       [this._anchor, this._line, this._overlay]);
+  },
+
+
+  setContent(content) {
+    this._overlay.setContent(content);
+    this._updateLatLngs();
+    return this;
+  },
+
+
+  setOffset(offset) {
+    this.options.offset = offset;
+    return this.update();
+  },
+
+
+  update() {
+    this._overlay.setLatLng(this._getOverlayLatLng()).update();
+    this._updateLatLngs();
+    return this;
+  },
+
+
+  _updateLatLngs() {
+    this._line.setLatLngs([this._anchor.getLatLng(), this._overlay.getLatLng()]);
+  },
+
+  _onOverlayMove() {
+    const newLatLng = this._overlay.getLatLng();
+    if (this._map) {
+      const anchorPos = this._map.latLngToContainerPoint(this._latlng);
+      const newPos = this._map.latLngToContainerPoint(newLatLng);
+      this.options.offset = newPos.subtract(anchorPos);
+      this._line.setLatLngs([this._latlng, newLatLng]);
+    }
   },
 
 
@@ -78,12 +112,13 @@ L.Note = L.FeatureGroup.extend({
       L.Util.extend({}, L.Note.prototype.options.anchorOptions,
         options.anchorOptions));
 
-    this._line = new LineClass([this._latlng, this._getOverlayLatLng()],
+    const latlng = this._getOverlayLatLng();
+    this._line = new LineClass([this._latlng, latlng],
       L.Util.extend({}, L.Note.prototype.options.lineOptions,
         options.lineOptions));
 
-    this._overlay = new OverlayClass(options, this)
-      .setLatLng(this._latlng)
+    this._overlay = new OverlayClass(this.options.overlayOptions, this)
+      .setLatLng(latlng)
       .setContent(options.content);
   },
 
@@ -100,13 +135,13 @@ L.Note = L.FeatureGroup.extend({
   setLatLng(latlng) {
     this._latlng = latlng;
     this._anchor.setLatLng(latlng);
-    this._overlay.setLatLng(latlng);
-
+    this._overlay.setLatLng(this._getOverlayLatLng());
   },
 
   onAdd(map) {
     L.FeatureGroup.prototype.onAdd.call(this, map);
     this._line.setLatLngs([this._latlng, this._getOverlayLatLng()]);
+    this._overlay.setLatLng(this._getOverlayLatLng());
     return this;
   },
 
@@ -116,8 +151,6 @@ L.Note = L.FeatureGroup.extend({
    * @param  {Event} evt
    */
   _onOverlayDragStart: function(evt) {
-    this._initialDistance = L.DomEvent.getMousePosition(evt)
-      .subtract(this._map.latLngToContainerPoint(this._marker.getLatLng()));
     this.fire('label:' + evt.type, evt);
   },
 
@@ -127,9 +160,6 @@ L.Note = L.FeatureGroup.extend({
    * @param  {DragEvent} evt
    */
   _onOverlayDrag: function(evt) {
-    var latlng = this._map.containerPointToLatLng(
-      L.DomEvent.getMousePosition(evt)._subtract(this._initialDistance));
-    this._line.setLatLngs([latlng, this._latlng]);
     this.fire('label:' + evt.type, evt);
   },
 
@@ -139,10 +169,12 @@ L.Note = L.FeatureGroup.extend({
   }
 });
 
+Note.Content = Content;
+
 export function note(latlng, options) {
   return new L.Note(latlng, options);
 };
 
 L.note = note;
 
-export default L.Note;
+export default Note;

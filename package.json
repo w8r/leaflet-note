@@ -1,13 +1,11 @@
 {
   "name": "leaflet-note",
   "version": "0.0.1",
-  "main": "dist/leaflet-plugin-note.cjs.js",
-  "module": "dist/leaflet-plugin-note.esm.js",
-  "browser": "dist/leaflet-plugin-note.umd.js",
+  "main": "dist/leaflet-plugin-note.umd.js",
   "minified": "dist/leaflet-plugin-note.min.js",
-  "description": "",
+  "description": "Leaflet plugin for displaying notes with anchor",
   "keywords": [],
-  "author": "",
+  "author": "Alexander Milevski <info@w8r.name>",
   "repository": {
     "type": "git",
     "url": ""
