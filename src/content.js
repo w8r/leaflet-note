@@ -16,6 +16,12 @@ export default L.DivOverlay.extend({
   },
 
 
+  update() {
+    L.DivOverlay.prototype.update.call(this);
+    this._updateDraggable();
+  },
+
+
   _initLayout() {
     const options = this.options;
     this._container   = L.DomUtil.create('div', options.containerClass);
@@ -23,8 +29,13 @@ export default L.DivOverlay.extend({
     this._container.appendChild(this._contentNode);
 
     this.dragging = new Drag(this);
-    if (options.draggable) {
-      this.dragging.enable();
+    this._updateDraggable();
+  },
+
+
+  _updateDraggable() {
+    if (this.dragging) {
+      this.dragging[this.options.draggable ? 'enable' : 'disable']();
     }
   },
 

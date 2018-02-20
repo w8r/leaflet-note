@@ -1,3 +1,4 @@
+import Note from '../src/index';
 const map = L.map('map').setView([48.8535912,2.340996], 15);
 const ACCESS_TOKEN = 'pk.eyJ1IjoidzhyIiwiYSI6IlF2Nlh6QVkifQ.D7BkmeoMI7GEkMDtg3durw';
 const layer = L.tileLayer(
@@ -9,7 +10,7 @@ const layer = L.tileLayer(
     id: 'mapbox.streets'
   }).addTo(map);
 
-const note = L.note([48.8535912,2.340996], {
+const note = new Note([48.8535912,2.340996], {
   size: [200, 100],
   offset: [200, -200],
   content: `<img src="https://media.giphy.com/media/lH0nrd3yKW1sA/giphy.gif">`

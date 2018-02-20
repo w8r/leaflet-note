@@ -17,6 +17,7 @@ const Note = L.Note = L.FeatureGroup.extend({
     markerClass:    L.CircleMarker,
     overlayClass:   Content,
     offset:         [20, 20],
+    draggable:      true,
     overlayOptions: {},
     lineOptions:    {},
     anchorOptions:  {}
@@ -83,6 +84,14 @@ const Note = L.Note = L.FeatureGroup.extend({
   },
 
 
+  setDraggable(on) {
+    this.options.draggable                =
+    this.options.overlayOptions.draggable =
+    this._overlay.options.draggable       = !!on;
+    this._overlay.update();
+  },
+
+
   setOffset(offset) {
     this.options.offset = offset;
     return this.update();
@@ -99,6 +108,7 @@ const Note = L.Note = L.FeatureGroup.extend({
   _updateLatLngs() {
     this._line.setLatLngs([this._anchor.getLatLng(), this._overlay.getLatLng()]);
   },
+
 
   _onOverlayMove() {
     const newLatLng = this._overlay.getLatLng();
@@ -126,7 +136,8 @@ const Note = L.Note = L.FeatureGroup.extend({
       L.Util.extend({}, L.Note.prototype.options.lineOptions,
         options.lineOptions));
 
-    this._overlay = new OverlayClass(this.options.overlayOptions, this)
+    options.overlayOptions.draggable = options.draggable;
+    this._overlay = new OverlayClass(options.overlayOptions, this)
       .setLatLng(latlng)
       .setContent(options.content);
     this.setSize(this.options.size);
