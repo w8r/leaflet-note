@@ -9,6 +9,7 @@ export default L.DivOverlay.extend({
     contentClass:   'leaflet-note-content',
     pane:           'popupPane',
 
+    offset:         [0, 0],
     maxWidth:       500,
     minWidth:       50,
     maxHeight:      null,
@@ -19,6 +20,14 @@ export default L.DivOverlay.extend({
   update() {
     L.DivOverlay.prototype.update.call(this);
     this._updateDraggable();
+  },
+
+
+  getEvents() {
+    return {
+      // zoom: this.update,
+      // viewreset: this.update
+    };
   },
 
 
@@ -42,6 +51,7 @@ export default L.DivOverlay.extend({
 
   _updateLayout() {
     const { x, y } = this._getSize();
+    console.log(x, y);
     L.Popup.prototype._updateLayout.call(this);
   },
 

@@ -1,33 +1,54 @@
-## Leaflet Plugin Template
+## Leaflet Note plugin
 
-This repository showcases one of many ways of writing a [Leaflet](https://www.leafletjs.com)-plugin, with a modern approach of using a bundler ([rollup]()).
-The setup should be considered a work-in-progress as it's only the first building block for creating a new plugin from scratch, and is not going to be a 'one-solution-fits-all' type of solution.
+### API
 
-### What it does
-With the help of [rollup](), it bundles the `src/index.js` file together with any dependencies used inside into a [UMD]() compatible format, which should be usable in most environments (node/browser). A minified version is also output along the bundle.
-Most settings are the default ones and should be improved upon.
-
-An `index.html` file is also included to show the basic use-case for the very barebone version included inside `src/index.js`.
-
-### Important notes
-A lot of variables are currently hardcoded, such as the filenames output by rollup. These can be found inside the `package.json` as follows:
-```json
-{
-  "main": "dist/leaflet-plugin-template.cjs.js",
-  "module": "dist/leaflet-plugin-template.esm.js",
-  "browser": "dist/leaflet-plugin-template.umd.js",
-  "minified": "dist/leaflet-plugin-template.min.js"
-}
+**Constructor**
+```js
+const note = L.note([lat, lng], {
+  offset:  <L.Point|Array>, // offset between the center of tooltip and anchor
+  [size]:  <L.Point|Array>, // content size (optional)
+  [draggable]: true,        // enable/disable tooltip dragging
+  content: <String>         // HTML content
+});
 ```
-Currently, the setup only outputs the minified and the browser versions, but rollup supports both .esm and .cjs output as well.
+**`.update()`**
 
-Another thing hardcoded is the UMD moduleName, which is set inside `rollup.config.js`. This has to match the Leaflet-plugin name (and namespace).
+**`.setLatLng(<L.LatLng|Array<number>>)`**
 
-### Want to know more?
-A blog post will follow that explains what happens in more detail.
+**`.setDraggable(<boolean>)`**
 
-### Feedback
-Any feedback is happily taken, either as issues or pull requests!
+**`.setSize(<L.Point|Array<number>>)`**
 
-### TODO:
-* Showcase tests (and typical ways of testing Leaflet plugins)
+**`.setOffset(<L.Point|Array<number>>)`**
+
+**`.setContent(<String>)`**
+
+
+### Install
+
+```
+npm i -S leaflet-note
+```
+
+```js
+import Note from 'leaflet-note';
+// or
+const Note = require('leaflet-note');
+```
+
+**CDN**
+```html
+<script src="https://unpkg.com/leaflet-note"></script>
+```
+
+### Develop
+
+### License
+
+Copyright 2018 Alexander Milevski
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

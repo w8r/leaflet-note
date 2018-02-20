@@ -1,5 +1,8 @@
 import L from 'leaflet';
 
+// XXX: maybe just use L.MarkerDrag and fake stuff,
+// but it's very dirty
+
 const DRAGGABLE_CLASS = 'leaflet-marker-draggable';
 
 export default L.Handler.extend({

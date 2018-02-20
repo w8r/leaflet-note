@@ -105,6 +105,16 @@ const Note = L.Note = L.FeatureGroup.extend({
   },
 
 
+  getEvents() {
+    return {
+      zoom: this.update,
+      // zoomanim: this.update,
+      viewreset: this.update,
+      // previewreset: this.update
+    };
+  },
+
+
   _updateLatLngs() {
     this._line.setLatLngs([this._anchor.getLatLng(), this._overlay.getLatLng()]);
   },
