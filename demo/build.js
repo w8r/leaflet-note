@@ -14352,7 +14352,9 @@ var note = new Note([48.8535912,2.340996], {
   content: "<img src=\"https://media.giphy.com/media/lH0nrd3yKW1sA/giphy.gif\">"
 }).addTo(map);
 
-setTimeout(function () { return note.update(); }, 500);
+var img = new Image();
+L.DomEvent.on(img, 'load', function () { return note.update(); });
+img.src = 'https://media.giphy.com/media/lH0nrd3yKW1sA/giphy.gif';
 
 window.note = note;
 
