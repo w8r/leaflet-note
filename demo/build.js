@@ -160,10 +160,7 @@ var Content = L$1.DivOverlay.extend({
 
 
   getEvents: function getEvents() {
-    return {
-      // zoom: this.update,
-      // viewreset: this.update
-    };
+    return {};
   },
 
 
@@ -186,11 +183,33 @@ var Content = L$1.DivOverlay.extend({
 
 
   _updateLayout: function _updateLayout() {
-    var ref = this._getSize();
-    var x = ref.x;
-    var y = ref.y;
-    console.log(x, y);
-    L$1.Popup.prototype._updateLayout.call(this);
+    var container = this._contentNode,
+          style = container.style;
+
+    style.width = '';
+    style.whiteSpace = 'nowrap';
+
+    var width = container.offsetWidth;
+    width = Math.min(width, this.options.maxWidth);
+    width = Math.max(width, this.options.minWidth);
+
+    style.width = (width + 1) + 'px';
+    style.whiteSpace = '';
+
+    style.height = '';
+
+    var height = container.offsetHeight,
+          maxHeight = this.options.maxHeight,
+          scrolledClass = 'leaflet-popup-scrolled';
+
+    if (maxHeight && height > maxHeight) {
+      style.height = maxHeight + 'px';
+      L$1.DomUtil.addClass(container, scrolledClass);
+    } else {
+      L$1.DomUtil.removeClass(container, scrolledClass);
+    }
+
+    this._containerWidth = this._container.offsetWidth;
   },
 
 
@@ -206,6 +225,7 @@ var Content = L$1.DivOverlay.extend({
     var size = this._getSize();
     return [-size.x / 2, -size.y / 2];
   },
+
 
   _adjustPan: function _adjustPan() {}
 });
@@ -266,18 +286,18 @@ var Note = L$1.Note = L$1.FeatureGroup.extend({
     L$1.Util.setOptions(this, options);
     this._createLayers();
 
-    this._overlay
+    this._content
       .on('dragstart', this._onOverlayDragStart, this)
       .on('drag',      this._onOverlayDrag,      this)
       .on('dragend',   this._onOverlayDragStart, this)
       .on('move',      this._onOverlayMove,      this);
     L$1.LayerGroup.prototype.initialize.call(this,
-      [this._anchor, this._line, this._overlay]);
+      [this._anchor, this._line, this._content]);
   },
 
 
   setContent: function setContent(content) {
-    this._overlay.setContent(content);
+    this._content.setContent(content);
     this._updateLatLngs();
     return this;
   },
@@ -286,9 +306,9 @@ var Note = L$1.Note = L$1.FeatureGroup.extend({
   setSize: function setSize(size) {
     if (size) {
       size = L$1.point(size);
-      this._overlay.options.maxWidth = size.x;
-      this._overlay.options.maxHeight = size.y;
-      this._overlay.update();
+      this._content.options.maxWidth = size.x;
+      this._content.options.maxHeight = size.y;
+      this._content.update();
     }
   },
 
@@ -296,8 +316,8 @@ var Note = L$1.Note = L$1.FeatureGroup.extend({
   setDraggable: function setDraggable(on) {
     this.options.draggable                =
     this.options.overlayOptions.draggable =
-    this._overlay.options.draggable       = !!on;
-    this._overlay.update();
+    this._content.options.draggable       = !!on;
+    this._content.update();
   },
 
 
@@ -308,7 +328,7 @@ var Note = L$1.Note = L$1.FeatureGroup.extend({
 
 
   update: function update() {
-    this._overlay.setLatLng(this._getOverlayLatLng()).update();
+    this._content.setLatLng(this._getOverlayLatLng()).update();
     this._updateLatLngs();
     return this;
   },
@@ -324,13 +344,18 @@ var Note = L$1.Note = L$1.FeatureGroup.extend({
   },
 
 
+  getLatLng: function getLatLng() {
+    return this._anchor.getLatLng();
+  },
+
+
   _updateLatLngs: function _updateLatLngs() {
-    this._line.setLatLngs([this._anchor.getLatLng(), this._overlay.getLatLng()]);
+    this._line.setLatLngs([this._anchor.getLatLng(), this._content.getLatLng()]);
   },
 
 
   _onOverlayMove: function _onOverlayMove() {
-    var newLatLng = this._overlay.getLatLng();
+    var newLatLng = this._content.getLatLng();
     if (this._map) {
       var anchorPos = this._map.latLngToContainerPoint(this._latlng);
       var newPos = this._map.latLngToContainerPoint(newLatLng);
@@ -356,7 +381,7 @@ var Note = L$1.Note = L$1.FeatureGroup.extend({
         options.lineOptions));
 
     options.overlayOptions.draggable = options.draggable;
-    this._overlay = new OverlayClass(options.overlayOptions, this)
+    this._content = new OverlayClass(options.overlayOptions, this)
       .setLatLng(latlng)
       .setContent(options.content);
     this.setSize(this.options.size);
@@ -375,13 +400,13 @@ var Note = L$1.Note = L$1.FeatureGroup.extend({
   setLatLng: function setLatLng(latlng) {
     this._latlng = latlng;
     this._anchor.setLatLng(latlng);
-    this._overlay.setLatLng(this._getOverlayLatLng());
+    this._content.setLatLng(this._getOverlayLatLng());
   },
 
   onAdd: function onAdd(map) {
     L$1.FeatureGroup.prototype.onAdd.call(this, map);
     this._line.setLatLngs([this._latlng, this._getOverlayLatLng()]);
-    this._overlay.setLatLng(this._getOverlayLatLng());
+    this._content.setLatLng(this._getOverlayLatLng());
     return this;
   },
 

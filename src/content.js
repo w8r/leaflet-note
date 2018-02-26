@@ -24,10 +24,7 @@ export default L.DivOverlay.extend({
 
 
   getEvents() {
-    return {
-      // zoom: this.update,
-      // viewreset: this.update
-    };
+    return {};
   },
 
 
@@ -50,9 +47,33 @@ export default L.DivOverlay.extend({
 
 
   _updateLayout() {
-    const { x, y } = this._getSize();
-    console.log(x, y);
-    L.Popup.prototype._updateLayout.call(this);
+    const container = this._contentNode,
+          style = container.style;
+
+    style.width = '';
+    style.whiteSpace = 'nowrap';
+
+    let width = container.offsetWidth;
+    width = Math.min(width, this.options.maxWidth);
+    width = Math.max(width, this.options.minWidth);
+
+    style.width = (width + 1) + 'px';
+    style.whiteSpace = '';
+
+    style.height = '';
+
+    const height = container.offsetHeight,
+          maxHeight = this.options.maxHeight,
+          scrolledClass = 'leaflet-popup-scrolled';
+
+    if (maxHeight && height > maxHeight) {
+      style.height = maxHeight + 'px';
+      L.DomUtil.addClass(container, scrolledClass);
+    } else {
+      L.DomUtil.removeClass(container, scrolledClass);
+    }
+
+    this._containerWidth = this._container.offsetWidth;
   },
 
 
@@ -68,6 +89,7 @@ export default L.DivOverlay.extend({
     const size = this._getSize();
     return [-size.x / 2, -size.y / 2];
   },
+
 
   _adjustPan() {}
 });
