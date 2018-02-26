@@ -8,7 +8,7 @@
 
 
 import L from 'leaflet';
-import Content from './content';
+import Content from './tooltip';
 
 const Note = L.Note = L.FeatureGroup.extend({
 
@@ -108,9 +108,7 @@ const Note = L.Note = L.FeatureGroup.extend({
   getEvents() {
     return {
       zoom: this.update,
-      // zoomanim: this.update,
       viewreset: this.update,
-      // previewreset: this.update
     };
   },
 
@@ -128,8 +126,8 @@ const Note = L.Note = L.FeatureGroup.extend({
   _onOverlayMove() {
     const newLatLng = this._content.getLatLng();
     if (this._map) {
-      const anchorPos = this._map.latLngToContainerPoint(this._latlng);
-      const newPos = this._map.latLngToContainerPoint(newLatLng);
+      const anchorPos = this._map.latLngToLayerPoint(this._latlng);
+      const newPos = this._map.latLngToLayerPoint(newLatLng);
       this.options.offset = newPos.subtract(anchorPos);
       this._line.setLatLngs([this._latlng, newLatLng]);
     }
@@ -161,8 +159,9 @@ const Note = L.Note = L.FeatureGroup.extend({
 
   _getOverlayLatLng() {
     if (this._map) {
-      return this._map.containerPointToLatLng(
-        this._map.latLngToContainerPoint(this._latlng).add(this.options.offset)
+      return this._map.layerPointToLatLng(
+        this._map.latLngToLayerPoint(this._latlng)
+          .add(this.options.offset)
       );
     } else return this._latlng;
   },
@@ -174,10 +173,12 @@ const Note = L.Note = L.FeatureGroup.extend({
     this._content.setLatLng(this._getOverlayLatLng());
   },
 
+
   onAdd(map) {
     L.FeatureGroup.prototype.onAdd.call(this, map);
-    this._line.setLatLngs([this._latlng, this._getOverlayLatLng()]);
-    this._content.setLatLng(this._getOverlayLatLng());
+    const target = this._getOverlayLatLng();
+    this._line.setLatLngs([this._latlng, target]);
+    this._content.setLatLng(target);
     return this;
   },
 

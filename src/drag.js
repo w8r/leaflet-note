@@ -105,7 +105,8 @@ export default L.Handler.extend({
 
   _onDrag: function (e) {
     var overlay = this._overlay,
-    handlePos = L.DomUtil.getPosition(overlay._container).subtract(overlay._getAnchor()),
+    handlePos = L.DomUtil.getPosition(overlay._container)
+      .subtract(overlay._getAnchor(overlay.options.direction === 'center')),
         latlng = overlay._map.layerPointToLatLng(handlePos);
 
     overlay._latlng = latlng;

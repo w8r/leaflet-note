@@ -83,9 +83,9 @@ export default [{
   entry: 'demo/index.js',
   dest: 'demo/build.js',
   format: 'iife',
-  external: ['leaflet'],
-  globals: {
-    'leaflet': 'L'
-  },
+  // external: ['leaflet'],
+  // globals: {
+  //   'leaflet': 'L'
+  // },
   plugins: plugins(false),
 }]

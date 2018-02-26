@@ -1,3 +1,4 @@
+import L from 'leaflet';
 import Note from '../src/index';
 
 const map = L.map('map').setView([48.8535912,2.340996], 15);
@@ -14,7 +15,8 @@ const layer = L.tileLayer(
 //const url = 'https://media.giphy.com/media/lH0nrd3yKW1sA/giphy.gif';
 const url = 'https://21786-presscdn-pagely.netdna-ssl.com/wp-content/uploads/2014/10/red-panda-445px.jpg';
 const note = new Note([48.8535912,2.340996], {
-  offset: [100, -100],
+  offset: [100, -200],
+  size: [160, 155],
   content: `<img src="${url}" width="150">`
 }).addTo(map);
 
@@ -23,4 +25,17 @@ const img = new Image();
 L.DomEvent.on(img, 'load', () => note.update());
 img.src = url;
 
+const note2 = new Note([48.8535912,2.338996], {
+  offset: [100, 100],
+  content: `
+    <div style="background: #fff; padding: 5px 10px;">
+      <h3>Leaflet-Note</h3>
+      <p>drag me around</p>
+    </div>
+  `
+}).addTo(map);
+
+window.map = map;
 window.note = note;
+window.note2 = note2;
+

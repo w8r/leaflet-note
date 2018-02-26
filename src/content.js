@@ -7,7 +7,7 @@ export default L.DivOverlay.extend({
   options: {
     containerClass: 'leaflet-note-container',
     contentClass:   'leaflet-note-content',
-    pane:           'popupPane',
+    pane:           'tooltipPane',
 
     offset:         [0, 0],
     maxWidth:       500,
@@ -24,13 +24,13 @@ export default L.DivOverlay.extend({
 
 
   getEvents() {
-    return {};
+    return L.DivOverlay.prototype.getEvents.call(this);
   },
 
 
   _initLayout() {
-    const options = this.options;
-    this._container   = L.DomUtil.create('div', options.containerClass);
+    const options     = this.options;
+    this._container   = L.DomUtil.create('div', options.containerClass + ' ' + 'leaflet-zoom-animated');
     this._contentNode = L.DomUtil.create('div', options.contentClass);
     this._container.appendChild(this._contentNode);
 
@@ -47,33 +47,23 @@ export default L.DivOverlay.extend({
 
 
   _updateLayout() {
-    const container = this._contentNode,
-          style = container.style;
+    L.Popup.prototype._updateLayout.call(this);
+  },
 
-    style.width = '';
-    style.whiteSpace = 'nowrap';
 
-    let width = container.offsetWidth;
-    width = Math.min(width, this.options.maxWidth);
-    width = Math.max(width, this.options.minWidth);
+  _updatePosition: function () {
+    if (this._map) {
+      const pos = this._map.latLngToLayerPoint(this._latlng);
+      const size = this._getSize();
 
-    style.width = (width + 1) + 'px';
-    style.whiteSpace = '';
-
-    style.height = '';
-
-    const height = container.offsetHeight,
-          maxHeight = this.options.maxHeight,
-          scrolledClass = 'leaflet-popup-scrolled';
-
-    if (maxHeight && height > maxHeight) {
-      style.height = maxHeight + 'px';
-      L.DomUtil.addClass(container, scrolledClass);
-    } else {
-      L.DomUtil.removeClass(container, scrolledClass);
+      L.DomUtil.setPosition(this._container, pos.subtract(size.multiplyBy(0.5)));
     }
+  },
 
-    this._containerWidth = this._container.offsetWidth;
+
+  _animateZoom: function (e) {
+    var pos = this._map._latLngToNewLayerPoint(this._latlng, e.zoom, e.center);
+    this._setPosition(pos);
   },
 
 
