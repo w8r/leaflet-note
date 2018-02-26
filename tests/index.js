@@ -44,7 +44,7 @@ describe('L.Note', () => {
     const pos = map.latLngToContainerPoint(note.getLatLng());
     const center = L.DomUtil.getPosition(container).add(note._content._getSize().multiplyBy(0.5));
 
-    assert.deepEqual(note._content._getSize(), L.point({ x: 87, y: 36 }));
+    assert.deepEqual(note._content._getSize(), L.point({ x: 88, y: 36 }));
     assert.deepEqual(L.DomUtil.getPosition(container), L.point({ x: 176, y: 202 }));
 
     assert.equal(dist, pos.distanceTo(center));

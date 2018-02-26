@@ -13941,8 +13941,11 @@ exports.Map = Map;
 exports.map = createMap;
 
 })));
-//# sourceMappingURL=leaflet-src.js.map
+
 });
+
+// XXX: maybe just use L.MarkerDrag and fake stuff,
+// but it's very dirty
 
 var DRAGGABLE_CLASS = 'leaflet-marker-draggable';
 
