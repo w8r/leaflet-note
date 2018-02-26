@@ -1,6 +1,6 @@
 ## Leaflet Note plugin
 
-<img width="465" alt="screenshot 2018-02-26 22 08 34" src="https://user-images.githubusercontent.com/26884/36695570-fe5c16ca-1b41-11e8-88b2-258d3d61241b.png">
+[<img width="465" alt="screenshot 2018-02-26 22 08 34" src="https://user-images.githubusercontent.com/26884/36695570-fe5c16ca-1b41-11e8-88b2-258d3d61241b.png">](https://w8r.github.io/leaflet-note/)
 
 ### API
 
