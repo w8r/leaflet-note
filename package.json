@@ -17,7 +17,7 @@
   "scripts": {
     "build": "rollup --config",
     "watch": "rollup --config --watch",
-    "test": "npm run build && mocha-headless-chrome -f tests/tests.html",
+    "test": "npm run build && mocha-headless-chrome -a no-sandbox -a disable-setuid-sandbox -f tests/tests.html",
     "start": "run-p server watch",
     "server": "serve -p 5000"
   },
