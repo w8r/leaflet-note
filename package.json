@@ -1,6 +1,6 @@
 {
   "name": "leaflet-note",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "main": "dist/leaflet-plugin-note.umd.js",
   "minified": "dist/leaflet-plugin-note.min.js",
   "description": "Leaflet plugin for displaying notes with anchor",
@@ -19,7 +19,8 @@
     "watch": "rollup --config --watch",
     "test": "npm run build && mocha-headless-chrome -a no-sandbox -a disable-setuid-sandbox -f tests/tests.html",
     "start": "run-p server watch",
-    "server": "serve -p 5000"
+    "server": "serve -p 5000",
+    "prepublishOnly": "npm run build && npm run test"
   },
   "devDependencies": {
     "chai": "^4.1.2",
