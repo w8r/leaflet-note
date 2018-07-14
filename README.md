@@ -10,9 +10,14 @@ const note = L.note([lat, lng], {
   offset:  <L.Point|Array>, // offset between the center of tooltip and anchor
   [size]:  <L.Point|Array>, // content size (optional)
   [draggable]: true,        // enable/disable tooltip dragging
-  content: <String>         // HTML content
+  content: <String>         // HTML content,
+  overlayOptions: DivOverlayOptions,
+  lineOptions:    PolyLineOptions,
+  anchorOptions:  CircleMarkerOptions
 });
 ```
+For styling options of the parts of the note, see [DivOverlayOptions](https://leafletjs.com/reference-1.3.0.html#divoverlay), [PolylineOptions](https://leafletjs.com/reference-1.3.0.html#polyline-option), [CircleMarkerOptions](https://leafletjs.com/reference-1.3.0.html#circlemarker-option)
+
 **`.update()`**
 
 **`.setLatLng(<L.LatLng|Array<number>>)`**
